@@ -2,6 +2,14 @@
 
 cmake_minimum_required(VERSION 3.13)
 enable_testing()
+if (WASI)
+    add_definitions(-lwasi-emulated-getpid)
+    add_definitions(-lwasi-emulated-mman)
+    add_definitions(-lwasi-emulated-signal)
+    add_definitions(-lwasi-emulated-process-clocks)
+    add_definitions(-Wl,--no-entry)
+    add_definitions(-mexec-model=reactor)
+endif()
 
 if(APPLE)
     # The workaround for try_compile failing with code signing
@@ -1410,7 +1418,7 @@ else()
 
     if(ALSOFT_UWP)
         set(ALSOFT_CPPWINRT_VERSION "2.0.230706.1" CACHE STRING "The soft-oal default cppwinrt version")
-        
+
         find_program(NUGET_EXE NAMES nuget)
         if(NOT NUGET_EXE)
             message("NUGET.EXE not found.")
@@ -1426,7 +1434,7 @@ else()
         target_link_libraries(${IMPL_TARGET} PRIVATE ${CMAKE_BINARY_DIR}/packages/Microsoft.Windows.CppWinRT/build/native/Microsoft.Windows.CppWinRT.targets)
     endif()
 
-    if(NOT WIN32 AND NOT APPLE)
+    if(NOT WIN32 AND NOT APPLE AND NOT WASI)
         # FIXME: This doesn't put a dependency on the version script. Changing
         # the version script will not cause a relink as it should.
         target_link_options(${IMPL_TARGET} PRIVATE

@@ -239,8 +239,9 @@ bool EnsureEffectSlots(ALCcontext *context, size_t needed)
         context->mEffectSlotList.cend(), 0_uz,
         [](size_t cur, const EffectSlotSubList &sublist) noexcept -> size_t
         { return cur + static_cast<ALuint>(al::popcount(sublist.FreeMask)); })};
-
+#if !defined(__wasi__)
     try {
+#endif
         while(needed > count)
         {
             if(context->mEffectSlotList.size() >= 1<<25) UNLIKELY
@@ -252,10 +253,11 @@ bool EnsureEffectSlots(ALCcontext *context, size_t needed)
             context->mEffectSlotList.emplace_back(std::move(sublist));
             count += 64;
         }
-    }
-    catch(...) {
+#if !defined(__wasi__)
+    } catch(...) {
         return false;
     }
+#endif
     return true;
 }
 
@@ -855,8 +857,9 @@ FORCE_ALIGN void AL_APIENTRY alGetAuxiliaryEffectSlotfvDirect(ALCcontext *contex
 ALeffectslot::ALeffectslot(ALCcontext *context)
 {
     EffectStateFactory *factory{getFactoryByType(EffectSlotType::None)};
+#if !defined(__wasi__)
     if(!factory) throw std::runtime_error{"Failed to get null effect factory"};
-
+#endif
     al::intrusive_ptr<EffectState> state{factory->create()};
     Effect.State = state;
 
@@ -873,10 +876,10 @@ ALeffectslot::~ALeffectslot()
     if(Buffer)
         DecrementRef(Buffer->ref);
     Buffer = nullptr;
-
+#if !defined(__wasi__)
     if(auto *slot = mSlot->Update.exchange(nullptr, std::memory_order_relaxed))
         slot->State = nullptr;
-
+#endif
     mSlot->mEffectState = nullptr;
     mSlot->InUse = false;
 }
@@ -1054,7 +1057,9 @@ void ALeffectslot::eax_commit()
 
 [[noreturn]] void ALeffectslot::eax_fail(const char* message)
 {
+#if !defined(__wasi__)
     throw Exception{message};
+#endif
 }
 
 [[noreturn]] void ALeffectslot::eax_fail_unknown_effect_id()

@@ -29,8 +29,10 @@ void EffectHandler::SetParami(std::monostate& /*props*/, ALenum param, int /*val
     switch(param)
     {
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid null effect integer property 0x%04x",
             param};
+#endif
     }
 }
 void EffectHandler::SetParamiv(std::monostate &props, ALenum param, const int *vals)
@@ -46,8 +48,10 @@ void EffectHandler::SetParamf(std::monostate& /*props*/, ALenum param, float /*v
     switch(param)
     {
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid null effect float property 0x%04x",
             param};
+#endif
     }
 }
 void EffectHandler::SetParamfv(std::monostate &props, ALenum param, const float *vals)
@@ -64,8 +68,10 @@ void EffectHandler::GetParami(const std::monostate& /*props*/, ALenum param, int
     switch(param)
     {
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid null effect integer property 0x%04x",
             param};
+#endif
     }
 }
 void EffectHandler::GetParamiv(const std::monostate &props, ALenum param, int *vals)
@@ -81,8 +87,10 @@ void EffectHandler::GetParamf(const std::monostate& /*props*/, ALenum param, flo
     switch(param)
     {
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid null effect float property 0x%04x",
             param};
+#endif
     }
 }
 void EffectHandler::GetParamfv(const std::monostate &props, ALenum param, float *vals)
@@ -112,7 +120,9 @@ struct NullCommitter::Exception : public EaxException
 template<>
 [[noreturn]] void NullCommitter::fail(const char *message)
 {
+#if !defined(__wasi__)
     throw Exception{message};
+#endif
 }
 
 bool EaxNullCommitter::commit(const std::monostate &props)

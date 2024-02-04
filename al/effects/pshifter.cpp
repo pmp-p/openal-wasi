@@ -33,31 +33,43 @@ void EffectHandler::SetParami(PshifterProps &props, ALenum param, int val)
     switch(param)
     {
     case AL_PITCH_SHIFTER_COARSE_TUNE:
+#if !defined(__wasi__)
         if(!(val >= AL_PITCH_SHIFTER_MIN_COARSE_TUNE && val <= AL_PITCH_SHIFTER_MAX_COARSE_TUNE))
             throw effect_exception{AL_INVALID_VALUE, "Pitch shifter coarse tune out of range"};
+#endif
         props.CoarseTune = val;
         break;
 
     case AL_PITCH_SHIFTER_FINE_TUNE:
+#if !defined(__wasi__)
         if(!(val >= AL_PITCH_SHIFTER_MIN_FINE_TUNE && val <= AL_PITCH_SHIFTER_MAX_FINE_TUNE))
             throw effect_exception{AL_INVALID_VALUE, "Pitch shifter fine tune out of range"};
+#endif
         props.FineTune = val;
         break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid pitch shifter integer property 0x%04x",
             param};
+#endif
     }
 }
 void EffectHandler::SetParamiv(PshifterProps &props, ALenum param, const int *vals)
 { SetParami(props, param, vals[0]); }
 
 void EffectHandler::SetParamf(PshifterProps&, ALenum param, float)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid pitch shifter float property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+throw effect_exception{AL_INVALID_ENUM, "Invalid pitch shifter float property 0x%04x", param};
+#endif
+}
 void EffectHandler::SetParamfv(PshifterProps&, ALenum param, const float*)
 {
+#if !defined(__wasi__)
     throw effect_exception{AL_INVALID_ENUM, "Invalid pitch shifter float-vector property 0x%04x",
         param};
+#endif
 }
 
 void EffectHandler::GetParami(const PshifterProps &props, ALenum param, int *val)
@@ -68,19 +80,26 @@ void EffectHandler::GetParami(const PshifterProps &props, ALenum param, int *val
     case AL_PITCH_SHIFTER_FINE_TUNE: *val = props.FineTune; break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid pitch shifter integer property 0x%04x",
             param};
+#endif
     }
 }
 void EffectHandler::GetParamiv(const PshifterProps &props, ALenum param, int *vals)
 { GetParami(props, param, vals); }
 
 void EffectHandler::GetParamf(const PshifterProps&, ALenum param, float*)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid pitch shifter float property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid pitch shifter float property 0x%04x", param};
+#endif
+}
 void EffectHandler::GetParamfv(const PshifterProps&, ALenum param, float*)
 {
-    throw effect_exception{AL_INVALID_ENUM, "Invalid pitch shifter float vector-property 0x%04x",
-        param};
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid pitch shifter float vector-property 0x%04x", param};
+#endif
 }
 
 
@@ -130,7 +149,9 @@ struct PitchShifterCommitter::Exception : public EaxException {
 template<>
 [[noreturn]] void PitchShifterCommitter::fail(const char *message)
 {
+#if !defined(__wasi__)
     throw Exception{message};
+#endif
 }
 
 bool EaxPitchShifterCommitter::commit(const EAXPITCHSHIFTERPROPERTIES &props)

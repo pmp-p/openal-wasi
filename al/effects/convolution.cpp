@@ -29,8 +29,9 @@ void EffectHandler::SetParami(ConvolutionProps& /*props*/, ALenum param, int /*v
     switch(param)
     {
     default:
-        throw effect_exception{AL_INVALID_ENUM, "Invalid convolution effect integer property 0x%04x",
-            param};
+#if !defined(__wasi__)
+        throw effect_exception{AL_INVALID_ENUM, "Invalid convolution effect integer property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::SetParamiv(ConvolutionProps &props, ALenum param, const int *vals)
@@ -46,8 +47,9 @@ void EffectHandler::SetParamf(ConvolutionProps& /*props*/, ALenum param, float /
     switch(param)
     {
     default:
-        throw effect_exception{AL_INVALID_ENUM, "Invalid convolution effect float property 0x%04x",
-            param};
+#if !defined(__wasi__)
+        throw effect_exception{AL_INVALID_ENUM, "Invalid convolution effect float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::SetParamfv(ConvolutionProps &props, ALenum param, const float *values)
@@ -55,10 +57,11 @@ void EffectHandler::SetParamfv(ConvolutionProps &props, ALenum param, const floa
     switch(param)
     {
     case AL_CONVOLUTION_ORIENTATION_SOFT:
+#if !defined(__wasi__)
         if(!(std::isfinite(values[0]) && std::isfinite(values[1]) && std::isfinite(values[2])
             && std::isfinite(values[3]) && std::isfinite(values[4]) && std::isfinite(values[5])))
             throw effect_exception{AL_INVALID_VALUE, "Property 0x%04x value out of range", param};
-
+#endif
         props.OrientAt[0] = values[0];
         props.OrientAt[1] = values[1];
         props.OrientAt[2] = values[2];
@@ -77,8 +80,9 @@ void EffectHandler::GetParami(const ConvolutionProps& /*props*/, ALenum param, i
     switch(param)
     {
     default:
-        throw effect_exception{AL_INVALID_ENUM, "Invalid convolution effect integer property 0x%04x",
-            param};
+#if !defined(__wasi__)
+        throw effect_exception{AL_INVALID_ENUM, "Invalid convolution effect integer property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::GetParamiv(const ConvolutionProps &props, ALenum param, int *vals)
@@ -94,8 +98,9 @@ void EffectHandler::GetParamf(const ConvolutionProps& /*props*/, ALenum param, f
     switch(param)
     {
     default:
-        throw effect_exception{AL_INVALID_ENUM, "Invalid convolution effect float property 0x%04x",
-            param};
+#if !defined(__wasi__)
+        throw effect_exception{AL_INVALID_ENUM, "Invalid convolution effect float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::GetParamfv(const ConvolutionProps &props, ALenum param, float *values)

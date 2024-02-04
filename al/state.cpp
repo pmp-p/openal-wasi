@@ -106,7 +106,9 @@ const ALchar *GetResamplerName(const Resampler rtype)
     }
 #undef HANDLE_RESAMPLER
     /* Should never get here. */
+#if !defined(__wasi__)
     throw std::runtime_error{"Unexpected resampler index"};
+#endif
 }
 
 std::optional<DistanceModel> DistanceModelFromALenum(ALenum model)
@@ -135,7 +137,9 @@ ALenum ALenumFromDistanceModel(DistanceModel model)
     case DistanceModel::Exponent: return AL_EXPONENT_DISTANCE;
     case DistanceModel::ExponentClamped: return AL_EXPONENT_DISTANCE_CLAMPED;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Unexpected distance model "+std::to_string(static_cast<int>(model))};
+#endif
 }
 
 enum PropertyValue : ALenum {

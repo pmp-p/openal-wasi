@@ -99,7 +99,9 @@ ALenum GetDebugSourceEnum(DebugSource source)
     case DebugSource::Application: return AL_DEBUG_SOURCE_APPLICATION_EXT;
     case DebugSource::Other: return AL_DEBUG_SOURCE_OTHER_EXT;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Unexpected debug source value "+std::to_string(al::to_underlying(source))};
+#endif
 }
 
 ALenum GetDebugTypeEnum(DebugType type)
@@ -116,7 +118,9 @@ ALenum GetDebugTypeEnum(DebugType type)
     case DebugType::PopGroup: return AL_DEBUG_TYPE_POP_GROUP_EXT;
     case DebugType::Other: return AL_DEBUG_TYPE_OTHER_EXT;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Unexpected debug type value "+std::to_string(al::to_underlying(type))};
+#endif
 }
 
 ALenum GetDebugSeverityEnum(DebugSeverity severity)
@@ -128,7 +132,9 @@ ALenum GetDebugSeverityEnum(DebugSeverity severity)
     case DebugSeverity::Low: return AL_DEBUG_SEVERITY_LOW_EXT;
     case DebugSeverity::Notification: return AL_DEBUG_SEVERITY_NOTIFICATION_EXT;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Unexpected debug severity value "+std::to_string(al::to_underlying(severity))};
+#endif
 }
 
 

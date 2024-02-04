@@ -19,7 +19,9 @@ ALCenum EnumFromEventType(const alc::EventType type)
     case alc::EventType::DeviceRemoved: return ALC_EVENT_TYPE_DEVICE_REMOVED_SOFT;
     case alc::EventType::Count: break;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Invalid EventType: "+std::to_string(al::to_underlying(type))};
+#endif
 }
 
 } // namespace

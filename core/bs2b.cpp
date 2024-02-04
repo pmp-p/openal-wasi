@@ -112,9 +112,10 @@ namespace Bs2b {
 
 void bs2b::set_params(int level_, int srate_)
 {
+#if !defined(__wasi__)
     if(srate_ < 1)
         throw std::runtime_error{"BS2B srate < 1"};
-
+#endif
     level = level_;
     srate = srate_;
     init(this);

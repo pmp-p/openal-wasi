@@ -815,7 +815,9 @@ ALCenum EnumFromDevFmt(DevFmtType type)
     case DevFmtUInt: return ALC_UNSIGNED_INT_SOFT;
     case DevFmtFloat: return ALC_FLOAT_SOFT;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Invalid DevFmtType: "+std::to_string(int(type))};
+#endif
 }
 
 std::optional<DevFmtChannels> DevFmtChannelsFromEnum(ALCenum channels)
@@ -848,7 +850,9 @@ ALCenum EnumFromDevFmt(DevFmtChannels channels)
     case DevFmtX714:
     case DevFmtX3D71: break;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Invalid DevFmtChannels: "+std::to_string(int(channels))};
+#endif
 }
 
 std::optional<DevAmbiLayout> DevAmbiLayoutFromEnum(ALCenum layout)
@@ -868,7 +872,9 @@ ALCenum EnumFromDevAmbi(DevAmbiLayout layout)
     case DevAmbiLayout::FuMa: return ALC_FUMA_SOFT;
     case DevAmbiLayout::ACN: return ALC_ACN_SOFT;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Invalid DevAmbiLayout: "+std::to_string(int(layout))};
+#endif
 }
 
 std::optional<DevAmbiScaling> DevAmbiScalingFromEnum(ALCenum scaling)
@@ -890,7 +896,9 @@ ALCenum EnumFromDevAmbi(DevAmbiScaling scaling)
     case DevAmbiScaling::SN3D: return ALC_SN3D_SOFT;
     case DevAmbiScaling::N3D: return ALC_N3D_SOFT;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Invalid DevAmbiScaling: "+std::to_string(int(scaling))};
+#endif
 }
 
 
@@ -1433,17 +1441,25 @@ ALCenum UpdateDeviceParams(ALCdevice *device, const int *attrList)
     const uint oldFreq{device->Frequency};
     const DevFmtChannels oldChans{device->FmtChans};
     const DevFmtType oldType{device->FmtType};
-    try {
+#if !defined(__wasi__)
+    try
+#endif
+    {
         auto backend = device->Backend.get();
         if(!backend->reset())
+#if !defined(__wasi__)
             throw al::backend_exception{al::backend_error::DeviceError, "Device reset failure"};
+#else
+    {}
+#endif
     }
+#if !defined(__wasi__)
     catch(std::exception &e) {
         ERR("Device error: %s\n", e.what());
         device->handleDisconnect("%s", e.what());
         return ALC_INVALID_DEVICE;
     }
-
+#endif
     if(device->FmtChans != oldChans && device->Flags.test(ChannelsRequest))
     {
         ERR("Failed to set %s, got %s instead\n", DevFmtChannelsString(oldChans),
@@ -1769,16 +1785,21 @@ ALCenum UpdateDeviceParams(ALCdevice *device, const int *attrList)
     device->mDeviceState = DeviceState::Configured;
     if(!device->Flags.test(DevicePaused))
     {
-        try {
+#if !defined(__wasi__)
+        try
+#endif
+        {
             auto backend = device->Backend.get();
             backend->start();
             device->mDeviceState = DeviceState::Playing;
         }
+#if !defined(__wasi__)
         catch(al::backend_exception& e) {
             ERR("%s\n", e.what());
             device->handleDisconnect("%s", e.what());
             return ALC_INVALID_DEVICE;
         }
+#endif
         TRACE("Post-start: %s, %s, %uhz, %u / %u buffer\n",
             DevFmtChannelsString(device->FmtChans), DevFmtTypeString(device->FmtType),
             device->Frequency, device->UpdateSize, device->BufferSize);
@@ -2665,13 +2686,18 @@ ALC_API ALCcontext* ALC_APIENTRY alcCreateContext(ALCdevice *device, const ALCin
 
     ContextRef context{[](auto&& ...args) -> ContextRef
     {
-        try {
+#if !defined(__wasi__)
+        try
+#endif
+        {
             return ContextRef{new ALCcontext{std::forward<decltype(args)>(args)...}};
         }
+#if !defined(__wasi__)
         catch(std::exception& e) {
             ERR("Failed to create ALCcontext: %s\n", e.what());
             return ContextRef{};
         }
+#endif
     }(dev, ctxflags)};
     if(!context)
     {
@@ -2905,20 +2931,23 @@ ALC_API ALCdevice* ALC_APIENTRY alcOpenDevice(const ALCchar *deviceName) noexcep
     device->NumMonoSources = device->SourcesMax - device->NumStereoSources;
     device->AuxiliaryEffectSlotMax = 64;
     device->NumAuxSends = DefaultSends;
-
-    try {
+#if !defined(__wasi__)
+    try
+#endif
+    {
         auto backend = PlaybackFactory->createBackend(device.get(), BackendType::Playback);
         std::lock_guard<std::recursive_mutex> listlock{ListLock};
         backend->open(devname);
         device->Backend = std::move(backend);
     }
+#if !defined(__wasi__)
     catch(al::backend_exception &e) {
         WARN("Failed to open playback device: %s\n", e.what());
         alcSetError(nullptr, (e.errorCode() == al::backend_error::OutOfMemory)
             ? ALC_OUT_OF_MEMORY : ALC_INVALID_VALUE);
         return nullptr;
     }
-
+#endif
     {
         std::lock_guard<std::recursive_mutex> listlock{ListLock};
         auto iter = std::lower_bound(DeviceList.cbegin(), DeviceList.cend(), device.get());
@@ -3038,20 +3067,23 @@ ALC_API ALCdevice* ALC_APIENTRY alcCaptureOpenDevice(const ALCchar *deviceName, 
     TRACE("Capture format: %s, %s, %uhz, %u / %u buffer\n", DevFmtChannelsString(device->FmtChans),
         DevFmtTypeString(device->FmtType), device->Frequency, device->UpdateSize,
         device->BufferSize);
-
-    try {
+#if !defined(__wasi__)
+    try
+#endif
+    {
         auto backend = CaptureFactory->createBackend(device.get(), BackendType::Capture);
         std::lock_guard<std::recursive_mutex> listlock{ListLock};
         backend->open(devname);
         device->Backend = std::move(backend);
     }
+#if !defined(__wasi__)
     catch(al::backend_exception &e) {
         WARN("Failed to open capture device: %s\n", e.what());
         alcSetError(nullptr, (e.errorCode() == al::backend_error::OutOfMemory)
             ? ALC_OUT_OF_MEMORY : ALC_INVALID_VALUE);
         return nullptr;
     }
-
+#endif
     {
         std::lock_guard<std::recursive_mutex> listlock{ListLock};
         auto iter = std::lower_bound(DeviceList.cbegin(), DeviceList.cend(), device.get());
@@ -3107,16 +3139,21 @@ ALC_API void ALC_APIENTRY alcCaptureStart(ALCdevice *device) noexcept
         alcSetError(dev.get(), ALC_INVALID_DEVICE);
     else if(dev->mDeviceState != DeviceState::Playing)
     {
-        try {
+#if !defined(__wasi__)
+        try
+#endif
+        {
             auto backend = dev->Backend.get();
             backend->start();
             dev->mDeviceState = DeviceState::Playing;
         }
+#if !defined(__wasi__)
         catch(al::backend_exception& e) {
             ERR("%s\n", e.what());
             dev->handleDisconnect("%s", e.what());
             alcSetError(dev.get(), ALC_INVALID_DEVICE);
         }
+#endif
     }
 }
 
@@ -3212,20 +3249,23 @@ ALC_API ALCdevice* ALC_APIENTRY alcLoopbackOpenDeviceSOFT(const ALCchar *deviceN
 
     device->NumStereoSources = 1;
     device->NumMonoSources = device->SourcesMax - device->NumStereoSources;
-
-    try {
+#if !defined(__wasi__)
+    try
+#endif
+    {
         auto backend = LoopbackBackendFactory::getFactory().createBackend(device.get(),
             BackendType::Playback);
         backend->open("Loopback");
         device->Backend = std::move(backend);
     }
+#if !defined(__wasi__)
     catch(al::backend_exception &e) {
         WARN("Failed to open loopback device: %s\n", e.what());
         alcSetError(nullptr, (e.errorCode() == al::backend_error::OutOfMemory)
             ? ALC_OUT_OF_MEMORY : ALC_INVALID_VALUE);
         return nullptr;
     }
-
+#endif
     {
         std::lock_guard<std::recursive_mutex> listlock{ListLock};
         auto iter = std::lower_bound(DeviceList.cbegin(), DeviceList.cend(), device.get());
@@ -3327,18 +3367,22 @@ ALC_API void ALC_APIENTRY alcDeviceResumeSOFT(ALCdevice *device) noexcept
     dev->Flags.reset(DevicePaused);
     if(dev->mContexts.load()->empty())
         return;
-
-    try {
+#if !defined(__wasi__)
+    try
+#endif
+    {
         auto backend = dev->Backend.get();
         backend->start();
         dev->mDeviceState = DeviceState::Playing;
     }
+#if !defined(__wasi__)
     catch(al::backend_exception& e) {
         ERR("%s\n", e.what());
         dev->handleDisconnect("%s", e.what());
         alcSetError(dev.get(), ALC_INVALID_DEVICE);
         return;
     }
+#endif
     TRACE("Post-resume: %s, %s, %uhz, %u / %u buffer\n",
         DevFmtChannelsString(dev->FmtChans), DevFmtTypeString(dev->FmtType),
         dev->Frequency, dev->UpdateSize, dev->BufferSize);
@@ -3439,10 +3483,14 @@ FORCE_ALIGN ALCboolean ALC_APIENTRY alcReopenDeviceSOFT(ALCdevice *device,
     }
 
     BackendPtr newbackend;
-    try {
+#if !defined(__wasi__)
+    try
+#endif
+    {
         newbackend = PlaybackFactory->createBackend(dev.get(), BackendType::Playback);
         newbackend->open(devname);
     }
+#if !defined(__wasi__)
     catch(al::backend_exception &e) {
         listlock.unlock();
         newbackend = nullptr;
@@ -3453,18 +3501,24 @@ FORCE_ALIGN ALCboolean ALC_APIENTRY alcReopenDeviceSOFT(ALCdevice *device,
 
         if(dev->Connected.load(std::memory_order_relaxed) && wasPlaying)
         {
-            try {
+#if !defined(__wasi__)
+            try
+#endif
+            {
                 auto backend = dev->Backend.get();
                 backend->start();
                 dev->mDeviceState = DeviceState::Playing;
             }
+#if !defined(__wasi__)
             catch(al::backend_exception &be) {
                 ERR("%s\n", be.what());
                 dev->handleDisconnect("%s", be.what());
             }
+#endif
         }
         return ALC_FALSE;
     }
+#endif
     listlock.unlock();
     dev->Backend = std::move(newbackend);
     dev->mDeviceState = DeviceState::Unprepared;

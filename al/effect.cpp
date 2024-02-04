@@ -129,8 +129,9 @@ bool EnsureEffects(ALCdevice *device, size_t needed)
     size_t count{std::accumulate(device->EffectList.cbegin(), device->EffectList.cend(), 0_uz,
         [](size_t cur, const EffectSubList &sublist) noexcept -> size_t
         { return cur + static_cast<ALuint>(al::popcount(sublist.FreeMask)); })};
-
+#if !defined(__wasi__)
     try {
+#endif
         while(needed > count)
         {
             if(device->EffectList.size() >= 1<<25) UNLIKELY
@@ -142,10 +143,12 @@ bool EnsureEffects(ALCdevice *device, size_t needed)
             device->EffectList.emplace_back(std::move(sublist));
             count += 64;
         }
+#if !defined(__wasi__)
     }
     catch(...) {
         return false;
     }
+#endif
     return true;
 }
 
@@ -305,7 +308,10 @@ FORCE_ALIGN void AL_APIENTRY alEffectiDirect(ALCcontext *context, ALuint effect,
         else
             context->setError(AL_INVALID_VALUE, "Effect type 0x%04x not supported", value);
     }
-    else try
+    else
+#if !defined(__wasi__)
+try
+#endif
     {
         /* Call the appropriate handler */
         std::visit([aleffect,param,value](auto &arg)
@@ -319,9 +325,11 @@ FORCE_ALIGN void AL_APIENTRY alEffectiDirect(ALCcontext *context, ALuint effect,
             return EffectHandler::SetParami(arg, param, value);
         }, aleffect->Props);
     }
+#if !defined(__wasi__)
     catch(effect_exception &e) {
         context->setError(e.errorCode(), "%s", e.what());
     }
+#endif
 }
 
 AL_API DECL_FUNC3(void, alEffectiv, ALuint, ALenum, const ALint*)
@@ -341,7 +349,10 @@ FORCE_ALIGN void AL_APIENTRY alEffectivDirect(ALCcontext *context, ALuint effect
     ALeffect *aleffect{LookupEffect(device, effect)};
     if(!aleffect) UNLIKELY
         context->setError(AL_INVALID_NAME, "Invalid effect ID %u", effect);
-    else try
+    else
+#if !defined(__wasi__)
+ try
+#endif
     {
         /* Call the appropriate handler */
         std::visit([aleffect,param,values](auto &arg)
@@ -355,9 +366,11 @@ FORCE_ALIGN void AL_APIENTRY alEffectivDirect(ALCcontext *context, ALuint effect
             return EffectHandler::SetParamiv(arg, param, values);
         }, aleffect->Props);
     }
+#if !defined(__wasi__)
     catch(effect_exception &e) {
         context->setError(e.errorCode(), "%s", e.what());
     }
+#endif
 }
 
 AL_API DECL_FUNC3(void, alEffectf, ALuint, ALenum, ALfloat)
@@ -370,8 +383,12 @@ FORCE_ALIGN void AL_APIENTRY alEffectfDirect(ALCcontext *context, ALuint effect,
     ALeffect *aleffect{LookupEffect(device, effect)};
     if(!aleffect) UNLIKELY
         context->setError(AL_INVALID_NAME, "Invalid effect ID %u", effect);
-    else try
+    else
+#if !defined(__wasi__)
+ try
+#endif
     {
+
         /* Call the appropriate handler */
         std::visit([aleffect,param,value](auto &arg)
         {
@@ -384,9 +401,11 @@ FORCE_ALIGN void AL_APIENTRY alEffectfDirect(ALCcontext *context, ALuint effect,
             return EffectHandler::SetParamf(arg, param, value);
         }, aleffect->Props);
     }
+#if !defined(__wasi__)
     catch(effect_exception &e) {
         context->setError(e.errorCode(), "%s", e.what());
     }
+#endif
 }
 
 AL_API DECL_FUNC3(void, alEffectfv, ALuint, ALenum, const ALfloat*)
@@ -399,7 +418,10 @@ FORCE_ALIGN void AL_APIENTRY alEffectfvDirect(ALCcontext *context, ALuint effect
     ALeffect *aleffect{LookupEffect(device, effect)};
     if(!aleffect) UNLIKELY
         context->setError(AL_INVALID_NAME, "Invalid effect ID %u", effect);
-    else try
+    else
+#if !defined(__wasi__)
+ try
+#endif
     {
         /* Call the appropriate handler */
         std::visit([aleffect,param,values](auto &arg)
@@ -413,9 +435,11 @@ FORCE_ALIGN void AL_APIENTRY alEffectfvDirect(ALCcontext *context, ALuint effect
             return EffectHandler::SetParamfv(arg, param, values);
         }, aleffect->Props);
     }
+#if !defined(__wasi__)
     catch(effect_exception &e) {
         context->setError(e.errorCode(), "%s", e.what());
     }
+#endif
 }
 
 AL_API DECL_FUNC3(void, alGetEffecti, ALuint, ALenum, ALint*)
@@ -430,7 +454,10 @@ FORCE_ALIGN void AL_APIENTRY alGetEffectiDirect(ALCcontext *context, ALuint effe
         context->setError(AL_INVALID_NAME, "Invalid effect ID %u", effect);
     else if(param == AL_EFFECT_TYPE)
         *value = aleffect->type;
-    else try
+    else
+#if !defined(__wasi__)
+ try
+#endif
     {
         /* Call the appropriate handler */
         std::visit([aleffect,param,value](auto &arg)
@@ -444,9 +471,11 @@ FORCE_ALIGN void AL_APIENTRY alGetEffectiDirect(ALCcontext *context, ALuint effe
             return EffectHandler::GetParami(arg, param, value);
         }, aleffect->Props);
     }
+#if !defined(__wasi__)
     catch(effect_exception &e) {
         context->setError(e.errorCode(), "%s", e.what());
     }
+#endif
 }
 
 AL_API DECL_FUNC3(void, alGetEffectiv, ALuint, ALenum, ALint*)
@@ -466,7 +495,10 @@ FORCE_ALIGN void AL_APIENTRY alGetEffectivDirect(ALCcontext *context, ALuint eff
     const ALeffect *aleffect{LookupEffect(device, effect)};
     if(!aleffect) UNLIKELY
         context->setError(AL_INVALID_NAME, "Invalid effect ID %u", effect);
-    else try
+    else
+#if !defined(__wasi__)
+try
+#endif
     {
         /* Call the appropriate handler */
         std::visit([aleffect,param,values](auto &arg)
@@ -480,9 +512,11 @@ FORCE_ALIGN void AL_APIENTRY alGetEffectivDirect(ALCcontext *context, ALuint eff
             return EffectHandler::GetParamiv(arg, param, values);
         }, aleffect->Props);
     }
+#if !defined(__wasi__)
     catch(effect_exception &e) {
         context->setError(e.errorCode(), "%s", e.what());
     }
+#endif
 }
 
 AL_API DECL_FUNC3(void, alGetEffectf, ALuint, ALenum, ALfloat*)
@@ -495,7 +529,10 @@ FORCE_ALIGN void AL_APIENTRY alGetEffectfDirect(ALCcontext *context, ALuint effe
     const ALeffect *aleffect{LookupEffect(device, effect)};
     if(!aleffect) UNLIKELY
         context->setError(AL_INVALID_NAME, "Invalid effect ID %u", effect);
-    else try
+    else
+#if !defined(__wasi__)
+ try
+#endif
     {
         /* Call the appropriate handler */
         std::visit([aleffect,param,value](auto &arg)
@@ -509,9 +546,11 @@ FORCE_ALIGN void AL_APIENTRY alGetEffectfDirect(ALCcontext *context, ALuint effe
             return EffectHandler::GetParamf(arg, param, value);
         }, aleffect->Props);
     }
+#if !defined(__wasi__)
     catch(effect_exception &e) {
         context->setError(e.errorCode(), "%s", e.what());
     }
+#endif
 }
 
 AL_API DECL_FUNC3(void, alGetEffectfv, ALuint, ALenum, ALfloat*)
@@ -524,7 +563,10 @@ FORCE_ALIGN void AL_APIENTRY alGetEffectfvDirect(ALCcontext *context, ALuint eff
     const ALeffect *aleffect{LookupEffect(device, effect)};
     if(!aleffect) UNLIKELY
         context->setError(AL_INVALID_NAME, "Invalid effect ID %u", effect);
-    else try
+    else
+#if !defined(__wasi__)
+ try
+#endif
     {
         /* Call the appropriate handler */
         std::visit([aleffect,param,values](auto &arg)
@@ -538,9 +580,11 @@ FORCE_ALIGN void AL_APIENTRY alGetEffectfvDirect(ALCcontext *context, ALuint eff
             return EffectHandler::GetParamfv(arg, param, values);
         }, aleffect->Props);
     }
+#if !defined(__wasi__)
     catch(effect_exception &e) {
         context->setError(e.errorCode(), "%s", e.what());
     }
+#endif
 }
 
 

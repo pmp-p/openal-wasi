@@ -37,11 +37,15 @@ namespace al {
 
 semaphore::semaphore(unsigned int initial)
 {
+#if !defined(__wasi__)
     if(initial > static_cast<unsigned int>(std::numeric_limits<int>::max()))
         throw std::system_error(std::make_error_code(std::errc::value_too_large));
+#endif
     mSem = CreateSemaphore(nullptr, initial, std::numeric_limits<int>::max(), nullptr);
+#if !defined(__wasi__)
     if(mSem == nullptr)
         throw std::system_error(std::make_error_code(std::errc::resource_unavailable_try_again));
+#endif
 }
 
 semaphore::~semaphore()
@@ -49,8 +53,10 @@ semaphore::~semaphore()
 
 void semaphore::post()
 {
+#if !defined(__wasi__)
     if(!ReleaseSemaphore(static_cast<HANDLE>(mSem), 1, nullptr))
         throw std::system_error(std::make_error_code(std::errc::value_too_large));
+#endif
 }
 
 void semaphore::wait() noexcept
@@ -71,8 +77,10 @@ namespace al {
 semaphore::semaphore(unsigned int initial)
 {
     mSem = dispatch_semaphore_create(initial);
+#if !defined(__wasi__)
     if(!mSem)
         throw std::system_error(std::make_error_code(std::errc::resource_unavailable_try_again));
+#endif
 }
 
 semaphore::~semaphore()
@@ -97,8 +105,10 @@ namespace al {
 
 semaphore::semaphore(unsigned int initial)
 {
+#if !defined(__wasi__)
     if(sem_init(&mSem, 0, initial) != 0)
         throw std::system_error(std::make_error_code(std::errc::resource_unavailable_try_again));
+#endif
 }
 
 semaphore::~semaphore()
@@ -106,8 +116,10 @@ semaphore::~semaphore()
 
 void semaphore::post()
 {
+#if !defined(__wasi__)
     if(sem_post(&mSem) != 0)
         throw std::system_error(std::make_error_code(std::errc::value_too_large));
+#endif
 }
 
 void semaphore::wait() noexcept

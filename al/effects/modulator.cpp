@@ -38,8 +38,10 @@ constexpr ALenum EnumFromWaveform(ModulatorWaveform type)
     case ModulatorWaveform::Sawtooth: return AL_RING_MODULATOR_SAWTOOTH;
     case ModulatorWaveform::Square: return AL_RING_MODULATOR_SQUARE;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Invalid modulator waveform: " +
         std::to_string(static_cast<int>(type))};
+#endif
 }
 
 constexpr EffectProps genDefaultProps() noexcept
@@ -67,13 +69,16 @@ void EffectHandler::SetParami(ModulatorProps &props, ALenum param, int val)
     case AL_RING_MODULATOR_WAVEFORM:
         if(auto formopt = WaveformFromEmum(val))
             props.Waveform = *formopt;
+#if !defined(__wasi__)
         else
             throw effect_exception{AL_INVALID_VALUE, "Invalid modulator waveform: 0x%04x", val};
+#endif
         break;
 
     default:
-        throw effect_exception{AL_INVALID_ENUM, "Invalid modulator integer property 0x%04x",
-            param};
+#if !defined(__wasi__)
+        throw effect_exception{AL_INVALID_ENUM, "Invalid modulator integer property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::SetParamiv(ModulatorProps &props, ALenum param, const int *vals)
@@ -84,19 +89,25 @@ void EffectHandler::SetParamf(ModulatorProps &props, ALenum param, float val)
     switch(param)
     {
     case AL_RING_MODULATOR_FREQUENCY:
+#if !defined(__wasi__)
         if(!(val >= AL_RING_MODULATOR_MIN_FREQUENCY && val <= AL_RING_MODULATOR_MAX_FREQUENCY))
             throw effect_exception{AL_INVALID_VALUE, "Modulator frequency out of range: %f", val};
+#endif
         props.Frequency = val;
         break;
 
     case AL_RING_MODULATOR_HIGHPASS_CUTOFF:
+#if !defined(__wasi__)
         if(!(val >= AL_RING_MODULATOR_MIN_HIGHPASS_CUTOFF && val <= AL_RING_MODULATOR_MAX_HIGHPASS_CUTOFF))
             throw effect_exception{AL_INVALID_VALUE, "Modulator high-pass cutoff out of range: %f", val};
+#endif
         props.HighPassCutoff = val;
         break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid modulator float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::SetParamfv(ModulatorProps &props, ALenum param, const float *vals)
@@ -111,8 +122,9 @@ void EffectHandler::GetParami(const ModulatorProps &props, ALenum param, int *va
     case AL_RING_MODULATOR_WAVEFORM: *val = EnumFromWaveform(props.Waveform); break;
 
     default:
-        throw effect_exception{AL_INVALID_ENUM, "Invalid modulator integer property 0x%04x",
-            param};
+#if !defined(__wasi__)
+        throw effect_exception{AL_INVALID_ENUM, "Invalid modulator integer property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::GetParamiv(const ModulatorProps &props, ALenum param, int *vals)
@@ -125,7 +137,9 @@ void EffectHandler::GetParamf(const ModulatorProps &props, ALenum param, float *
     case AL_RING_MODULATOR_HIGHPASS_CUTOFF: *val = props.HighPassCutoff; break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid modulator float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::GetParamfv(const ModulatorProps &props, ALenum param, float *vals)
@@ -190,7 +204,9 @@ struct ModulatorCommitter::Exception : public EaxException {
 template<>
 [[noreturn]] void ModulatorCommitter::fail(const char *message)
 {
+#if !defined(__wasi__)
     throw Exception{message};
+#endif
 }
 
 bool EaxModulatorCommitter::commit(const EAXRINGMODULATORPROPERTIES &props)

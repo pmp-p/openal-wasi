@@ -86,7 +86,9 @@ ALenum EnumFromAmbiLayout(AmbiLayout layout)
     case AmbiLayout::FuMa: return AL_FUMA_SOFT;
     case AmbiLayout::ACN: return AL_ACN_SOFT;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Invalid AmbiLayout: "+std::to_string(int(layout))};
+#endif
 }
 
 std::optional<AmbiScaling> AmbiScalingFromEnum(ALenum scale)
@@ -108,7 +110,9 @@ ALenum EnumFromAmbiScaling(AmbiScaling scale)
     case AmbiScaling::N3D: return AL_N3D_SOFT;
     case AmbiScaling::UHJ: break;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Invalid AmbiScaling: "+std::to_string(int(scale))};
+#endif
 }
 
 #ifdef ALSOFT_EAX
@@ -130,7 +134,9 @@ ALenum EnumFromEaxStorage(EaxStorage storage)
     case EaxStorage::Accessible: return AL_STORAGE_ACCESSIBLE;
     case EaxStorage::Hardware: return AL_STORAGE_HARDWARE;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Invalid EaxStorage: "+std::to_string(int(storage))};
+#endif
 }
 
 
@@ -179,8 +185,9 @@ bool EnsureBuffers(ALCdevice *device, size_t needed)
     size_t count{std::accumulate(device->BufferList.cbegin(), device->BufferList.cend(), 0_uz,
         [](size_t cur, const BufferSubList &sublist) noexcept -> size_t
         { return cur + static_cast<ALuint>(al::popcount(sublist.FreeMask)); })};
-
+#if !defined(__wasi__)
     try {
+#endif
         while(needed > count)
         {
             if(device->BufferList.size() >= 1<<25) UNLIKELY
@@ -192,10 +199,12 @@ bool EnsureBuffers(ALCdevice *device, size_t needed)
             device->BufferList.emplace_back(std::move(sublist));
             count += 64;
         }
+#if !defined(__wasi__)
     }
     catch(...) {
         return false;
     }
+#endif
     return true;
 }
 

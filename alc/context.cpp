@@ -120,7 +120,9 @@ ALCcontext::ALCcontext(al::intrusive_ptr<ALCdevice> device, ContextFlagBitset fl
     : ContextBase{device.get()}, mALDevice{std::move(device)}, mContextFlags{flags}
 {
     mDebugGroups.emplace_back(DebugSource::Other, 0, std::string{});
+#if !defined(__wasi__)
     mDebugEnabled.store(mContextFlags.test(ContextFlags::DebugBit), std::memory_order_relaxed);
+#endif
 }
 
 ALCcontext::~ALCcontext()
@@ -169,16 +171,19 @@ void ALCcontext::init()
             mDefaultSlot->mState = SlotState::Playing;
         }
     }
+#if !defined(__wasi__)
     mActiveAuxSlots.store(std::move(auxslots), std::memory_order_relaxed);
+
 
     allocVoiceChanges();
     {
         VoiceChange *cur{mVoiceChangeTail};
         while(VoiceChange *next{cur->mNext.load(std::memory_order_relaxed)})
             cur = next;
+
         mCurrentVoiceChange.store(cur, std::memory_order_relaxed);
     }
-
+#endif
     mExtensions = getContextExtensions();
 
     if(sBufferSubDataCompat)
@@ -294,6 +299,7 @@ void ALCcontext::applyAllUpdates()
     /* Tell the mixer to stop applying updates, then wait for any active
      * updating to finish, before providing updates.
      */
+#if !defined(__wasi__)
     mHoldUpdates.store(true, std::memory_order_release);
     while((mUpdateCount.load(std::memory_order_acquire)&1) != 0) {
         /* busy-wait */
@@ -313,6 +319,7 @@ void ALCcontext::applyAllUpdates()
      * they all happen at once.
      */
     mHoldUpdates.store(false, std::memory_order_release);
+#endif
 }
 
 

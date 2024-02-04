@@ -37,89 +37,121 @@ constexpr EffectProps genDefaultProps() noexcept
 const EffectProps EqualizerEffectProps{genDefaultProps()};
 
 void EffectHandler::SetParami(EqualizerProps&, ALenum param, int)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid equalizer integer property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid equalizer integer property 0x%04x", param};
+#endif
+}
 void EffectHandler::SetParamiv(EqualizerProps&, ALenum param, const int*)
 {
-    throw effect_exception{AL_INVALID_ENUM, "Invalid equalizer integer-vector property 0x%04x",
-        param};
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid equalizer integer-vector property 0x%04x", param};
+#endif
 }
 void EffectHandler::SetParamf(EqualizerProps &props, ALenum param, float val)
 {
     switch(param)
     {
     case AL_EQUALIZER_LOW_GAIN:
+#if !defined(__wasi__)
         if(!(val >= AL_EQUALIZER_MIN_LOW_GAIN && val <= AL_EQUALIZER_MAX_LOW_GAIN))
             throw effect_exception{AL_INVALID_VALUE, "Equalizer low-band gain out of range"};
+#endif
         props.LowGain = val;
         break;
 
     case AL_EQUALIZER_LOW_CUTOFF:
+#if !defined(__wasi__)
         if(!(val >= AL_EQUALIZER_MIN_LOW_CUTOFF && val <= AL_EQUALIZER_MAX_LOW_CUTOFF))
             throw effect_exception{AL_INVALID_VALUE, "Equalizer low-band cutoff out of range"};
+#endif
         props.LowCutoff = val;
         break;
 
     case AL_EQUALIZER_MID1_GAIN:
+#if !defined(__wasi__)
         if(!(val >= AL_EQUALIZER_MIN_MID1_GAIN && val <= AL_EQUALIZER_MAX_MID1_GAIN))
             throw effect_exception{AL_INVALID_VALUE, "Equalizer mid1-band gain out of range"};
+#endif
         props.Mid1Gain = val;
         break;
 
     case AL_EQUALIZER_MID1_CENTER:
+#if !defined(__wasi__)
         if(!(val >= AL_EQUALIZER_MIN_MID1_CENTER && val <= AL_EQUALIZER_MAX_MID1_CENTER))
             throw effect_exception{AL_INVALID_VALUE, "Equalizer mid1-band center out of range"};
+#endif
         props.Mid1Center = val;
         break;
 
     case AL_EQUALIZER_MID1_WIDTH:
+#if !defined(__wasi__)
         if(!(val >= AL_EQUALIZER_MIN_MID1_WIDTH && val <= AL_EQUALIZER_MAX_MID1_WIDTH))
             throw effect_exception{AL_INVALID_VALUE, "Equalizer mid1-band width out of range"};
+#endif
         props.Mid1Width = val;
         break;
 
     case AL_EQUALIZER_MID2_GAIN:
+#if !defined(__wasi__)
         if(!(val >= AL_EQUALIZER_MIN_MID2_GAIN && val <= AL_EQUALIZER_MAX_MID2_GAIN))
             throw effect_exception{AL_INVALID_VALUE, "Equalizer mid2-band gain out of range"};
+#endif
         props.Mid2Gain = val;
         break;
 
     case AL_EQUALIZER_MID2_CENTER:
+#if !defined(__wasi__)
         if(!(val >= AL_EQUALIZER_MIN_MID2_CENTER && val <= AL_EQUALIZER_MAX_MID2_CENTER))
             throw effect_exception{AL_INVALID_VALUE, "Equalizer mid2-band center out of range"};
+#endif
         props.Mid2Center = val;
         break;
 
     case AL_EQUALIZER_MID2_WIDTH:
+#if !defined(__wasi__)
         if(!(val >= AL_EQUALIZER_MIN_MID2_WIDTH && val <= AL_EQUALIZER_MAX_MID2_WIDTH))
             throw effect_exception{AL_INVALID_VALUE, "Equalizer mid2-band width out of range"};
+#endif
         props.Mid2Width = val;
         break;
 
     case AL_EQUALIZER_HIGH_GAIN:
+#if !defined(__wasi__)
         if(!(val >= AL_EQUALIZER_MIN_HIGH_GAIN && val <= AL_EQUALIZER_MAX_HIGH_GAIN))
             throw effect_exception{AL_INVALID_VALUE, "Equalizer high-band gain out of range"};
+#endif
         props.HighGain = val;
         break;
 
     case AL_EQUALIZER_HIGH_CUTOFF:
+#if !defined(__wasi__)
         if(!(val >= AL_EQUALIZER_MIN_HIGH_CUTOFF && val <= AL_EQUALIZER_MAX_HIGH_CUTOFF))
             throw effect_exception{AL_INVALID_VALUE, "Equalizer high-band cutoff out of range"};
+#endif
         props.HighCutoff = val;
         break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid equalizer float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::SetParamfv(EqualizerProps &props, ALenum param, const float *vals)
 { SetParamf(props, param, vals[0]); }
 
 void EffectHandler::GetParami(const EqualizerProps&, ALenum param, int*)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid equalizer integer property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid equalizer integer property 0x%04x", param};
+#endif
+}
 void EffectHandler::GetParamiv(const EqualizerProps&, ALenum param, int*)
 {
-    throw effect_exception{AL_INVALID_ENUM, "Invalid equalizer integer-vector property 0x%04x",
-        param};
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid equalizer integer-vector property 0x%04x", param};
+#endif
 }
 void EffectHandler::GetParamf(const EqualizerProps &props, ALenum param, float *val)
 {
@@ -137,7 +169,9 @@ void EffectHandler::GetParamf(const EqualizerProps &props, ALenum param, float *
     case AL_EQUALIZER_HIGH_CUTOFF: *val = props.HighCutoff; break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid equalizer float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::GetParamfv(const EqualizerProps &props, ALenum param, float *vals)
@@ -286,7 +320,9 @@ struct EqualizerCommitter::Exception : public EaxException {
 template<>
 [[noreturn]] void EqualizerCommitter::fail(const char *message)
 {
+#if !defined(__wasi__)
     throw Exception{message};
+#endif
 }
 
 bool EaxEqualizerCommitter::commit(const EAXEQUALIZERPROPERTIES &props)

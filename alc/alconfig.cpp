@@ -34,7 +34,9 @@
 #include <array>
 #include <cctype>
 #include <cstdlib>
+#if !defined(__wasi__)
 #include <filesystem>
+#endif
 #include <istream>
 #include <limits>
 #include <string>
@@ -377,6 +379,11 @@ void ReadALConfig()
     }
 }
 
+#elif defined(__wasi__)
+void ReadALConfig()
+{
+    puts("no op ReadALConfig");
+}
 #else
 
 void ReadALConfig()

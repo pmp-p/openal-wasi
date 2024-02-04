@@ -35,11 +35,17 @@ constexpr EffectProps genDefaultProps() noexcept
 const EffectProps AutowahEffectProps{genDefaultProps()};
 
 void EffectHandler::SetParami(AutowahProps&, ALenum param, int)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid autowah integer property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid autowah integer property 0x%04x", param};
+#endif
+}
 void EffectHandler::SetParamiv(AutowahProps&, ALenum param, const int*)
 {
+#if !defined(__wasi__)
     throw effect_exception{AL_INVALID_ENUM, "Invalid autowah integer vector property 0x%04x",
         param};
+#endif
 }
 
 void EffectHandler::SetParamf(AutowahProps &props, ALenum param, float val)
@@ -47,42 +53,58 @@ void EffectHandler::SetParamf(AutowahProps &props, ALenum param, float val)
     switch(param)
     {
     case AL_AUTOWAH_ATTACK_TIME:
+#if !defined(__wasi__)
         if(!(val >= AL_AUTOWAH_MIN_ATTACK_TIME && val <= AL_AUTOWAH_MAX_ATTACK_TIME))
             throw effect_exception{AL_INVALID_VALUE, "Autowah attack time out of range"};
+#endif
         props.AttackTime = val;
         break;
 
     case AL_AUTOWAH_RELEASE_TIME:
+#if !defined(__wasi__)
         if(!(val >= AL_AUTOWAH_MIN_RELEASE_TIME && val <= AL_AUTOWAH_MAX_RELEASE_TIME))
             throw effect_exception{AL_INVALID_VALUE, "Autowah release time out of range"};
+#endif
         props.ReleaseTime = val;
         break;
 
     case AL_AUTOWAH_RESONANCE:
+#if !defined(__wasi__)
         if(!(val >= AL_AUTOWAH_MIN_RESONANCE && val <= AL_AUTOWAH_MAX_RESONANCE))
             throw effect_exception{AL_INVALID_VALUE, "Autowah resonance out of range"};
+#endif
         props.Resonance = val;
         break;
 
     case AL_AUTOWAH_PEAK_GAIN:
+#if !defined(__wasi__)
         if(!(val >= AL_AUTOWAH_MIN_PEAK_GAIN && val <= AL_AUTOWAH_MAX_PEAK_GAIN))
             throw effect_exception{AL_INVALID_VALUE, "Autowah peak gain out of range"};
+#endif
         props.PeakGain = val;
         break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid autowah float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::SetParamfv(AutowahProps &props,  ALenum param, const float *vals)
 { SetParamf(props, param, vals[0]); }
 
 void EffectHandler::GetParami(const AutowahProps&, ALenum param, int*)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid autowah integer property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+throw effect_exception{AL_INVALID_ENUM, "Invalid autowah integer property 0x%04x", param};
+#endif
+}
 void EffectHandler::GetParamiv(const AutowahProps&, ALenum param, int*)
 {
+#if !defined(__wasi__)
     throw effect_exception{AL_INVALID_ENUM, "Invalid autowah integer vector property 0x%04x",
         param};
+#endif
 }
 
 void EffectHandler::GetParamf(const AutowahProps &props, ALenum param, float *val)
@@ -95,7 +117,9 @@ void EffectHandler::GetParamf(const AutowahProps &props, ALenum param, float *va
     case AL_AUTOWAH_PEAK_GAIN: *val = props.PeakGain; break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid autowah float property 0x%04x", param};
+#endif
     }
 
 }
@@ -173,7 +197,9 @@ struct AutowahCommitter::Exception : public EaxException
 template<>
 [[noreturn]] void AutowahCommitter::fail(const char *message)
 {
+#if !defined(__wasi__)
     throw Exception{message};
+#endif
 }
 
 bool EaxAutowahCommitter::commit(const EAXAUTOWAHPROPERTIES &props)

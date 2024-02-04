@@ -1,7 +1,10 @@
 #ifndef AL_ATOMIC_H
 #define AL_ATOMIC_H
 
+#if !defined(__wasi__)
 #include <atomic>
+#endif
+
 #include <memory>
 
 #include "almalloc.h"
@@ -66,6 +69,7 @@ public:
     [[nodiscard]]
     auto load(std::memory_order m=std::memory_order_seq_cst) const noexcept -> T*
     { return mPointer.load(m); }
+#if !defined(__wasi__)
     void store(std::nullptr_t, std::memory_order m=std::memory_order_seq_cst) noexcept
     {
         if(auto oldptr = mPointer.exchange(nullptr, m))
@@ -76,26 +80,34 @@ public:
         if(auto oldptr = mPointer.exchange(ptr, m))
             D{}(oldptr);
     }
+
+
     void store(unique_ptr_t&& ptr, std::memory_order m=std::memory_order_seq_cst) noexcept
     {
         if(auto oldptr = mPointer.exchange(ptr.release(), m))
             D{}(oldptr);
     }
-
+#endif
+#if !defined(__wasi__)
     [[nodiscard]]
     auto exchange(std::nullptr_t, std::memory_order m=std::memory_order_seq_cst) noexcept -> unique_ptr_t
     { return unique_ptr_t{mPointer.exchange(nullptr, m)}; }
+
     [[nodiscard]]
     auto exchange(gsl::owner<T*> ptr, std::memory_order m=std::memory_order_seq_cst) noexcept -> unique_ptr_t
     { return unique_ptr_t{mPointer.exchange(ptr, m)}; }
+#endif
     [[nodiscard]]
     auto exchange(std::unique_ptr<T>&& ptr, std::memory_order m=std::memory_order_seq_cst) noexcept -> unique_ptr_t
     { return unique_ptr_t{mPointer.exchange(ptr.release(), m)}; }
-
+#if !defined(__wasi__)
     [[nodiscard]]
     auto is_lock_free() const noexcept -> bool { return mPointer.is_lock_free(); }
+#endif
 
+#if !defined(__wasi__)
     static constexpr auto is_always_lock_free = std::atomic<gsl::owner<T*>>::is_always_lock_free;
+#endif
 };
 
 } // namespace al

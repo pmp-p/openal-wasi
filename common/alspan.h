@@ -246,53 +246,66 @@ public:
     template<size_t C>
     [[nodiscard]] constexpr auto first() const -> span<element_type,C>
     {
+#if !defined(__wasi__)
         if(C > mDataLength)
             throw std::out_of_range{"Subspan count out of range"};
+#endif
         return span<element_type,C>{mData, C};
     }
 
     [[nodiscard]] constexpr auto first(size_t count) const -> span
     {
+#if !defined(__wasi__)
         if(count > mDataLength)
             throw std::out_of_range{"Subspan count out of range"};
+#endif
         return span{mData, count};
     }
 
     template<size_t C>
     [[nodiscard]] constexpr auto last() const -> span<element_type,C>
     {
+#if !defined(__wasi__)
         if(C > mDataLength)
             throw std::out_of_range{"Subspan count out of range"};
+#endif
         return span<element_type,C>{mData+mDataLength-C, C};
     }
 
     [[nodiscard]] constexpr auto last(size_t count) const -> span
     {
+#if !defined(__wasi__)
         if(count > mDataLength)
             throw std::out_of_range{"Subspan count out of range"};
+#endif
         return span{mData+mDataLength-count, count};
     }
 
     template<size_t O, size_t C>
     [[nodiscard]] constexpr auto subspan() const -> std::enable_if_t<C!=dynamic_extent,span<element_type,C>>
     {
+#if !defined(__wasi__)
         if(O > mDataLength)
             throw std::out_of_range{"Subspan offset out of range"};
         if(C > mDataLength-O)
             throw std::out_of_range{"Subspan length out of range"};
+#endif
         return span<element_type,C>{mData+O, C};
     }
 
     template<size_t O, size_t C=dynamic_extent>
     [[nodiscard]] constexpr auto subspan() const -> std::enable_if_t<C==dynamic_extent,span<element_type,C>>
     {
+#if !defined(__wasi__)
         if(O > mDataLength)
             throw std::out_of_range{"Subspan offset out of range"};
+#endif
         return span<element_type,C>{mData+O, mDataLength-O};
     }
 
     [[nodiscard]] constexpr auto subspan(size_t offset, size_t count=dynamic_extent) const -> span
     {
+#if !defined(__wasi__)
         if(offset > mDataLength)
             throw std::out_of_range{"Subspan offset out of range"};
         if(count != dynamic_extent)
@@ -301,6 +314,7 @@ public:
                 throw std::out_of_range{"Subspan length out of range"};
             return span{mData+offset, count};
         }
+#endif
         return span{mData+offset, mDataLength-offset};
     }
 
@@ -313,15 +327,24 @@ template<typename T, size_t E>
 [[nodiscard]] constexpr inline auto span<T,E>::first(size_t count) const -> span<element_type,dynamic_extent>
 {
     if(count > size())
+#if !defined(__wasi__)
         throw std::out_of_range{"Subspan count out of range"};
+#else
+    abort();
+#endif
     return span<element_type>{mData, count};
 }
 
 template<typename T, size_t E>
 [[nodiscard]] constexpr inline auto span<T,E>::last(size_t count) const -> span<element_type,dynamic_extent>
 {
+
     if(count > size())
+#if !defined(__wasi__)
         throw std::out_of_range{"Subspan count out of range"};
+#else
+    abort();
+#endif
     return span<element_type>{mData+size()-count, count};
 }
 
@@ -330,11 +353,19 @@ template<typename T, size_t E>
     -> span<element_type,dynamic_extent>
 {
     if(offset > size())
+#if !defined(__wasi__)
         throw std::out_of_range{"Subspan offset out of range"};
+#else
+    abort();
+#endif
     if(count != dynamic_extent)
     {
         if(count > size()-offset)
+#if !defined(__wasi__)
             throw std::out_of_range{"Subspan length out of range"};
+#else
+    abort();
+#endif
         return span{mData+offset, count};
     }
     return span{mData+offset, size()-offset};

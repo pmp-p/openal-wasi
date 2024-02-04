@@ -38,7 +38,9 @@ constexpr ALenum EnumFromDirection(FShifterDirection dir)
     case FShifterDirection::Up: return AL_FREQUENCY_SHIFTER_DIRECTION_UP;
     case FShifterDirection::Off: return AL_FREQUENCY_SHIFTER_DIRECTION_OFF;
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Invalid direction: "+std::to_string(static_cast<int>(dir))};
+#endif
 }
 
 constexpr EffectProps genDefaultProps() noexcept
@@ -61,22 +63,28 @@ void EffectHandler::SetParami(FshifterProps &props, ALenum param, int val)
     case AL_FREQUENCY_SHIFTER_LEFT_DIRECTION:
         if(auto diropt = DirectionFromEmum(val))
             props.LeftDirection = *diropt;
+#if !defined(__wasi__)
         else
             throw effect_exception{AL_INVALID_VALUE,
                 "Unsupported frequency shifter left direction: 0x%04x", val};
+#endif
         break;
 
     case AL_FREQUENCY_SHIFTER_RIGHT_DIRECTION:
         if(auto diropt = DirectionFromEmum(val))
             props.RightDirection = *diropt;
+#if !defined(__wasi__)
         else
             throw effect_exception{AL_INVALID_VALUE,
                 "Unsupported frequency shifter right direction: 0x%04x", val};
+#endif
         break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM,
             "Invalid frequency shifter integer property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::SetParamiv(FshifterProps &props, ALenum param, const int *vals)
@@ -87,14 +95,18 @@ void EffectHandler::SetParamf(FshifterProps &props, ALenum param, float val)
     switch(param)
     {
     case AL_FREQUENCY_SHIFTER_FREQUENCY:
+#if !defined(__wasi__)
         if(!(val >= AL_FREQUENCY_SHIFTER_MIN_FREQUENCY && val <= AL_FREQUENCY_SHIFTER_MAX_FREQUENCY))
             throw effect_exception{AL_INVALID_VALUE, "Frequency shifter frequency out of range"};
+#endif
         props.Frequency = val;
         break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid frequency shifter float property 0x%04x",
             param};
+#endif
     }
 }
 void EffectHandler::SetParamfv(FshifterProps &props, ALenum param, const float *vals)
@@ -112,8 +124,10 @@ void EffectHandler::GetParami(const FshifterProps &props, ALenum param, int *val
         break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM,
             "Invalid frequency shifter integer property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::GetParamiv(const FshifterProps &props, ALenum param, int *vals)
@@ -128,8 +142,10 @@ void EffectHandler::GetParamf(const FshifterProps &props, ALenum param, float *v
         break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid frequency shifter float property 0x%04x",
             param};
+#endif
     }
 }
 void EffectHandler::GetParamfv(const FshifterProps &props, ALenum param, float *vals)
@@ -194,7 +210,9 @@ struct FrequencyShifterCommitter::Exception : public EaxException {
 template<>
 [[noreturn]] void FrequencyShifterCommitter::fail(const char *message)
 {
+#if !defined(__wasi__)
     throw Exception{message};
+#endif
 }
 
 bool EaxFrequencyShifterCommitter::commit(const EAXFREQUENCYSHIFTERPROPERTIES &props)

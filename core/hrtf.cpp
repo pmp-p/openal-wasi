@@ -430,10 +430,10 @@ std::unique_ptr<HrtfStore> CreateHrtfStore(uint rate, uint8_t irSize,
 
         auto delays_ = reinterpret_cast<ubyte2*>(base + offset);
         offset += sizeof(delays_[0])*irCount;
-
+#if !defined(__wasi__)
         if(offset != total)
             throw std::runtime_error{"HrtfStore allocation size mismatch"};
-
+#endif
         /* Copy input data to storage. */
         std::uninitialized_copy(fields.cbegin(), fields.cend(), field_);
         std::uninitialized_copy(elevs.cbegin(), elevs.cend(), elev_);

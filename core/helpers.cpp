@@ -11,7 +11,9 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#if !defined(__wasi__)
 #include <filesystem>
+#endif
 #include <limits>
 #include <mutex>
 #include <optional>
@@ -25,6 +27,7 @@
 #include "logging.h"
 #include "strutils.h"
 
+#if !defined(__wasi__)
 
 namespace {
 
@@ -39,7 +42,9 @@ void DirectorySearch(const std::filesystem::path &path, const std::string_view e
 
     const auto base = static_cast<std::make_signed_t<size_t>>(results->size());
 
-    try {
+    try
+
+        {
         auto fpath = fs::canonical(path.lexically_normal());
         TRACE("Searching %s for *%.*s\n", fpath.u8string().c_str(), al::sizei(ext), ext.data());
         for(auto&& dirent : fs::directory_iterator{fpath})
@@ -53,6 +58,7 @@ void DirectorySearch(const std::filesystem::path &path, const std::string_view e
                 results->emplace_back(entrypath.u8string());
         }
     }
+
     catch(fs::filesystem_error& fe) {
         if(fe.code() != std::make_error_code(std::errc::no_such_file_or_directory))
             ERR("Error enumerating directory: %s\n", fe.what());
@@ -474,6 +480,8 @@ bool SetRTPriorityRTKit(int prio [[maybe_unused]])
 }
 
 } // namespace
+
+#endif
 
 void SetRTPriority()
 {

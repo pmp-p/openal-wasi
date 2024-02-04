@@ -38,9 +38,10 @@ using std::cyl_bessel_i;
 template<typename T, typename U>
 U cyl_bessel_i(T nu, U x)
 {
+#if !defined(__wasi__)
     if(nu != T{0})
         throw std::runtime_error{"cyl_bessel_i: nu != 0"};
-
+#endif
     /* Start at k=1 since k=0 is trivial. */
     const double x2{x/2.0};
     double term{1.0};

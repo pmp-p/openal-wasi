@@ -32,59 +32,81 @@ constexpr EffectProps genDefaultProps() noexcept
 const EffectProps DistortionEffectProps{genDefaultProps()};
 
 void EffectHandler::SetParami(DistortionProps&, ALenum param, int)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid distortion integer property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid distortion integer property 0x%04x", param};
+#endif
+}
 void EffectHandler::SetParamiv(DistortionProps&, ALenum param, const int*)
 {
-    throw effect_exception{AL_INVALID_ENUM, "Invalid distortion integer-vector property 0x%04x",
-        param};
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid distortion integer-vector property 0x%04x", param};
+#endif
 }
 void EffectHandler::SetParamf(DistortionProps &props, ALenum param, float val)
 {
     switch(param)
     {
     case AL_DISTORTION_EDGE:
+#if !defined(__wasi__)
         if(!(val >= AL_DISTORTION_MIN_EDGE && val <= AL_DISTORTION_MAX_EDGE))
             throw effect_exception{AL_INVALID_VALUE, "Distortion edge out of range"};
+#endif
         props.Edge = val;
         break;
 
     case AL_DISTORTION_GAIN:
+#if !defined(__wasi__)
         if(!(val >= AL_DISTORTION_MIN_GAIN && val <= AL_DISTORTION_MAX_GAIN))
             throw effect_exception{AL_INVALID_VALUE, "Distortion gain out of range"};
+#endif
         props.Gain = val;
         break;
 
     case AL_DISTORTION_LOWPASS_CUTOFF:
+#if !defined(__wasi__)
         if(!(val >= AL_DISTORTION_MIN_LOWPASS_CUTOFF && val <= AL_DISTORTION_MAX_LOWPASS_CUTOFF))
             throw effect_exception{AL_INVALID_VALUE, "Distortion low-pass cutoff out of range"};
+#endif
         props.LowpassCutoff = val;
         break;
 
     case AL_DISTORTION_EQCENTER:
+#if !defined(__wasi__)
         if(!(val >= AL_DISTORTION_MIN_EQCENTER && val <= AL_DISTORTION_MAX_EQCENTER))
             throw effect_exception{AL_INVALID_VALUE, "Distortion EQ center out of range"};
+#endif
         props.EQCenter = val;
         break;
 
     case AL_DISTORTION_EQBANDWIDTH:
+#if !defined(__wasi__)
         if(!(val >= AL_DISTORTION_MIN_EQBANDWIDTH && val <= AL_DISTORTION_MAX_EQBANDWIDTH))
             throw effect_exception{AL_INVALID_VALUE, "Distortion EQ bandwidth out of range"};
+#endif
         props.EQBandwidth = val;
         break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid distortion float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::SetParamfv(DistortionProps &props, ALenum param, const float *vals)
 { SetParamf(props, param, vals[0]); }
 
 void EffectHandler::GetParami(const DistortionProps&, ALenum param, int*)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid distortion integer property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid distortion integer property 0x%04x", param};
+#endif
+}
 void EffectHandler::GetParamiv(const DistortionProps&, ALenum param, int*)
 {
-    throw effect_exception{AL_INVALID_ENUM, "Invalid distortion integer-vector property 0x%04x",
-        param};
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid distortion integer-vector property 0x%04x", param};
+#endif
 }
 void EffectHandler::GetParamf(const DistortionProps &props, ALenum param, float *val)
 {
@@ -97,7 +119,9 @@ void EffectHandler::GetParamf(const DistortionProps &props, ALenum param, float 
     case AL_DISTORTION_EQBANDWIDTH: *val = props.EQBandwidth; break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid distortion float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::GetParamfv(const DistortionProps &props, ALenum param, float *vals)
@@ -186,7 +210,9 @@ struct DistortionCommitter::Exception : public EaxException {
 template<>
 [[noreturn]] void DistortionCommitter::fail(const char *message)
 {
+#if !defined(__wasi__)
     throw Exception{message};
+#endif
 }
 
 bool EaxDistortionCommitter::commit(const EAXDISTORTIONPROPERTIES &props)

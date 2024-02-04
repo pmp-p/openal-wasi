@@ -47,8 +47,10 @@ RingBufferPtr RingBuffer::Create(std::size_t sz, std::size_t elem_sz, bool limit
             power_of_two |= power_of_two>>32;
     }
     ++power_of_two;
+#if !defined(__wasi__)
     if(power_of_two <= sz || power_of_two > std::numeric_limits<std::size_t>::max()/elem_sz)
         throw std::overflow_error{"Ring buffer size overflow"};
+#endif
 
     const std::size_t bufbytes{power_of_two * elem_sz};
     RingBufferPtr rb{new(FamCount(bufbytes)) RingBuffer{bufbytes}};

@@ -110,8 +110,12 @@ void NullBackend::open(std::string_view name)
     if(name.empty())
         name = GetDeviceName();
     else if(name != GetDeviceName())
+#if !defined(__wasi__)
         throw al::backend_exception{al::backend_error::NoDevice, "Device name \"%.*s\" not found",
             al::sizei(name), name.data()};
+#else
+    {}
+#endif
 
     mDevice->DeviceName = name;
 }
@@ -124,14 +128,19 @@ bool NullBackend::reset()
 
 void NullBackend::start()
 {
-    try {
+#if !defined(__wasi__)
+    try
+#endif
+    {
         mKillNow.store(false, std::memory_order_release);
         mThread = std::thread{std::mem_fn(&NullBackend::mixerProc), this};
     }
+#if !defined(__wasi__)
     catch(std::exception& e) {
         throw al::backend_exception{al::backend_error::DeviceError,
             "Failed to start mixing thread: %s", e.what()};
     }
+#endif
 }
 
 void NullBackend::stop()

@@ -96,7 +96,9 @@ constexpr ALenum EnumFromPhenome(VMorpherPhenome phenome)
     HANDLE_PHENOME(V);
     HANDLE_PHENOME(Z);
     }
+#if !defined(__wasi__)
     throw std::runtime_error{"Invalid phenome: "+std::to_string(static_cast<int>(phenome))};
+#endif
 #undef HANDLE_PHENOME
 }
 
@@ -118,8 +120,9 @@ constexpr ALenum EnumFromWaveform(VMorpherWaveform type)
     case VMorpherWaveform::Triangle: return AL_VOCAL_MORPHER_WAVEFORM_TRIANGLE;
     case VMorpherWaveform::Sawtooth: return AL_VOCAL_MORPHER_WAVEFORM_SAWTOOTH;
     }
-    throw std::runtime_error{"Invalid vocal morpher waveform: " +
-        std::to_string(static_cast<int>(type))};
+#if !defined(__wasi__)
+    throw std::runtime_error{"Invalid vocal morpher waveform: " + std::to_string(static_cast<int>(type))};
+#endif
 }
 
 constexpr EffectProps genDefaultProps() noexcept
@@ -145,59 +148,74 @@ void EffectHandler::SetParami(VmorpherProps &props, ALenum param, int val)
     case AL_VOCAL_MORPHER_PHONEMEA:
         if(auto phenomeopt = PhenomeFromEnum(val))
             props.PhonemeA = *phenomeopt;
+#if !defined(__wasi__)
         else
             throw effect_exception{AL_INVALID_VALUE, "Vocal morpher phoneme-a out of range: 0x%04x", val};
+#endif
         break;
 
     case AL_VOCAL_MORPHER_PHONEMEA_COARSE_TUNING:
+#if !defined(__wasi__)
         if(!(val >= AL_VOCAL_MORPHER_MIN_PHONEMEA_COARSE_TUNING && val <= AL_VOCAL_MORPHER_MAX_PHONEMEA_COARSE_TUNING))
             throw effect_exception{AL_INVALID_VALUE, "Vocal morpher phoneme-a coarse tuning out of range"};
+#endif
         props.PhonemeACoarseTuning = val;
         break;
 
     case AL_VOCAL_MORPHER_PHONEMEB:
         if(auto phenomeopt = PhenomeFromEnum(val))
             props.PhonemeB = *phenomeopt;
+#if !defined(__wasi__)
         else
             throw effect_exception{AL_INVALID_VALUE, "Vocal morpher phoneme-b out of range: 0x%04x", val};
+#endif
         break;
 
     case AL_VOCAL_MORPHER_PHONEMEB_COARSE_TUNING:
+#if !defined(__wasi__)
         if(!(val >= AL_VOCAL_MORPHER_MIN_PHONEMEB_COARSE_TUNING && val <= AL_VOCAL_MORPHER_MAX_PHONEMEB_COARSE_TUNING))
             throw effect_exception{AL_INVALID_VALUE, "Vocal morpher phoneme-b coarse tuning out of range"};
+#endif
         props.PhonemeBCoarseTuning = val;
         break;
 
     case AL_VOCAL_MORPHER_WAVEFORM:
         if(auto formopt = WaveformFromEmum(val))
             props.Waveform = *formopt;
+#if !defined(__wasi__)
         else
             throw effect_exception{AL_INVALID_VALUE, "Vocal morpher waveform out of range: 0x%04x", val};
+#endif
         break;
 
     default:
-        throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher integer property 0x%04x",
-            param};
+#if !defined(__wasi__)
+        throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher integer property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::SetParamiv(VmorpherProps&, ALenum param, const int*)
 {
-    throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher integer-vector property 0x%04x",
-        param};
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher integer-vector property 0x%04x", param};
+#endif
 }
 void EffectHandler::SetParamf(VmorpherProps &props, ALenum param, float val)
 {
     switch(param)
     {
     case AL_VOCAL_MORPHER_RATE:
+#if !defined(__wasi__)
         if(!(val >= AL_VOCAL_MORPHER_MIN_RATE && val <= AL_VOCAL_MORPHER_MAX_RATE))
             throw effect_exception{AL_INVALID_VALUE, "Vocal morpher rate out of range"};
+#endif
         props.Rate = val;
         break;
 
     default:
-        throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher float property 0x%04x",
-            param};
+#if !defined(__wasi__)
+        throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::SetParamfv(VmorpherProps &props, ALenum param, const float *vals)
@@ -214,14 +232,16 @@ void EffectHandler::GetParami(const VmorpherProps &props, ALenum param, int* val
     case AL_VOCAL_MORPHER_WAVEFORM: *val = EnumFromWaveform(props.Waveform); break;
 
     default:
-        throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher integer property 0x%04x",
-            param};
+#if !defined(__wasi__)
+        throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher integer property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::GetParamiv(const VmorpherProps&, ALenum param, int*)
 {
-    throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher integer-vector property 0x%04x",
-        param};
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher integer-vector property 0x%04x", param};
+#endif
 }
 void EffectHandler::GetParamf(const VmorpherProps &props, ALenum param, float *val)
 {
@@ -232,8 +252,9 @@ void EffectHandler::GetParamf(const VmorpherProps &props, ALenum param, float *v
         break;
 
     default:
-        throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher float property 0x%04x",
-            param};
+#if !defined(__wasi__)
+        throw effect_exception{AL_INVALID_ENUM, "Invalid vocal morpher float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::GetParamfv(const VmorpherProps &props, ALenum param, float *vals)
@@ -334,7 +355,9 @@ struct VocalMorpherCommitter::Exception : public EaxException {
 template<>
 [[noreturn]] void VocalMorpherCommitter::fail(const char *message)
 {
+#if !defined(__wasi__)
     throw Exception{message};
+#endif
 }
 
 bool EaxVocalMorpherCommitter::commit(const EAXVOCALMORPHERPROPERTIES &props)

@@ -198,14 +198,19 @@ int WaveBackend::mixerProc()
 void WaveBackend::open(std::string_view name)
 {
     auto fname = ConfigValueStr({}, "wave", "file");
-    if(!fname) throw al::backend_exception{al::backend_error::NoDevice,
-        "No wave output filename"};
+#if !defined(__wasi__)
+    if(!fname) throw al::backend_exception{al::backend_error::NoDevice, "No wave output filename"};
+#endif
 
     if(name.empty())
         name = GetDeviceName();
     else if(name != GetDeviceName())
+#if !defined(__wasi__)
         throw al::backend_exception{al::backend_error::NoDevice, "Device name \"%.*s\" not found",
             al::sizei(name), name.data()};
+#else
+    {}
+#endif
 
     /* There's only one "device", so if it's already open, we're done. */
     if(mFile) return;
@@ -218,10 +223,11 @@ void WaveBackend::open(std::string_view name)
 #else
     mFile = FilePtr{fopen(fname->c_str(), "wb")};
 #endif
+#if !defined(__wasi__)
     if(!mFile)
         throw al::backend_exception{al::backend_error::DeviceError, "Could not open file '%s': %s",
             fname->c_str(), std::generic_category().message(errno).c_str()};
-
+#endif
     mDevice->DeviceName = name;
 }
 
@@ -337,14 +343,19 @@ void WaveBackend::start()
 {
     if(mDataStart > 0 && fseek(mFile.get(), 0, SEEK_END) != 0)
         WARN("Failed to seek on output file\n");
-    try {
+#if !defined(__wasi__)
+    try
+#endif
+    {
         mKillNow.store(false, std::memory_order_release);
         mThread = std::thread{std::mem_fn(&WaveBackend::mixerProc), this};
     }
+#if !defined(__wasi__)
     catch(std::exception& e) {
         throw al::backend_exception{al::backend_error::DeviceError,
             "Failed to start mixing thread: %s", e.what()};
     }
+#endif
 }
 
 void WaveBackend::stop()

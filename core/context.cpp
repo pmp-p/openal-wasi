@@ -27,11 +27,12 @@ ContextBase::ContextBase(DeviceBase *device) : mDevice{device}
 
 ContextBase::~ContextBase()
 {
+#if !defined(__wasi__)
     if(auto curarray = mActiveAuxSlots.exchange(nullptr, std::memory_order_relaxed))
         std::destroy_n(curarray->end(), curarray->size());
 
     mVoices.store(nullptr, std::memory_order_relaxed);
-
+#endif
     if(mAsyncEvents)
     {
         size_t count{0};
@@ -102,9 +103,10 @@ void ContextBase::allocVoices(size_t addcount)
             return;
         ++addcount;
     }
-
+#if !defined(__wasi__)
     if(addcount >= std::numeric_limits<int>::max()/clustersize - mVoiceClusters.size())
         throw std::runtime_error{"Allocating too many voices"};
+#endif
     const size_t totalcount{(mVoiceClusters.size()+addcount) * clustersize};
     TRACE("Increasing allocated voices to %zu\n", totalcount);
 
@@ -156,8 +158,10 @@ EffectSlot *ContextBase::getEffectSlot()
     }
 
     auto clusterptr = std::make_unique<EffectSlotCluster::element_type>();
+#if !defined(__wasi__)
     if(1 >= std::numeric_limits<int>::max()/clusterptr->size() - mEffectSlotClusters.size())
         throw std::runtime_error{"Allocating too many effect slots"};
+#endif
     const size_t totalcount{(mEffectSlotClusters.size()+1) * clusterptr->size()};
     TRACE("Increasing allocated effect slots to %zu\n", totalcount);
 

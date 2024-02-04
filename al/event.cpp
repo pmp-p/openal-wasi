@@ -153,15 +153,22 @@ constexpr std::optional<AsyncEnableBits> GetEventType(ALenum etype) noexcept
 
 void StartEventThrd(ALCcontext *ctx)
 {
-    try {
+#if !defined(__wasi__)
+    try
+#else
+    puts(__FILE__ " : starting event thread");
+#endif
+    {
         ctx->mEventThread = std::thread{EventThread, ctx};
     }
+#if !defined(__wasi__)
     catch(std::exception& e) {
         ERR("Failed to start event thread: %s\n", e.what());
     }
     catch(...) {
         ERR("Failed to start event thread! Expect problems.\n");
     }
+#endif
 }
 
 void StopEventThrd(ALCcontext *ctx)

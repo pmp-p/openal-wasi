@@ -78,7 +78,9 @@ struct allocator {
 
     gsl::owner<T*> allocate(std::size_t n)
     {
+#if !defined(__wasi__)
         if(n > std::numeric_limits<std::size_t>::max()/sizeof(T)) throw std::bad_alloc();
+#endif
         return static_cast<gsl::owner<T*>>(::operator new[](n*sizeof(T), AlignVal));
     }
     void deallocate(gsl::owner<T*> p, std::size_t) noexcept

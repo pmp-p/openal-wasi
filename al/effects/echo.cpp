@@ -35,54 +35,82 @@ constexpr EffectProps genDefaultProps() noexcept
 const EffectProps EchoEffectProps{genDefaultProps()};
 
 void EffectHandler::SetParami(EchoProps&, ALenum param, int)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid echo integer property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid echo integer property 0x%04x", param};
+#endif
+}
 void EffectHandler::SetParamiv(EchoProps&, ALenum param, const int*)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid echo integer-vector property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid echo integer-vector property 0x%04x", param};
+#endif
+}
 void EffectHandler::SetParamf(EchoProps &props, ALenum param, float val)
 {
     switch(param)
     {
     case AL_ECHO_DELAY:
+#if !defined(__wasi__)
         if(!(val >= AL_ECHO_MIN_DELAY && val <= AL_ECHO_MAX_DELAY))
             throw effect_exception{AL_INVALID_VALUE, "Echo delay out of range"};
+#endif
         props.Delay = val;
         break;
 
     case AL_ECHO_LRDELAY:
+#if !defined(__wasi__)
         if(!(val >= AL_ECHO_MIN_LRDELAY && val <= AL_ECHO_MAX_LRDELAY))
             throw effect_exception{AL_INVALID_VALUE, "Echo LR delay out of range"};
+#endif
         props.LRDelay = val;
         break;
 
     case AL_ECHO_DAMPING:
+#if !defined(__wasi__)
         if(!(val >= AL_ECHO_MIN_DAMPING && val <= AL_ECHO_MAX_DAMPING))
             throw effect_exception{AL_INVALID_VALUE, "Echo damping out of range"};
+#endif
         props.Damping = val;
         break;
 
     case AL_ECHO_FEEDBACK:
+#if !defined(__wasi__)
         if(!(val >= AL_ECHO_MIN_FEEDBACK && val <= AL_ECHO_MAX_FEEDBACK))
             throw effect_exception{AL_INVALID_VALUE, "Echo feedback out of range"};
+#endif
         props.Feedback = val;
         break;
 
     case AL_ECHO_SPREAD:
+#if !defined(__wasi__)
         if(!(val >= AL_ECHO_MIN_SPREAD && val <= AL_ECHO_MAX_SPREAD))
             throw effect_exception{AL_INVALID_VALUE, "Echo spread out of range"};
+#endif
         props.Spread = val;
         break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid echo float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::SetParamfv(EchoProps &props, ALenum param, const float *vals)
 { SetParamf(props, param, vals[0]); }
 
 void EffectHandler::GetParami(const EchoProps&, ALenum param, int*)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid echo integer property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid echo integer property 0x%04x", param};
+#endif
+}
 void EffectHandler::GetParamiv(const EchoProps&, ALenum param, int*)
-{ throw effect_exception{AL_INVALID_ENUM, "Invalid echo integer-vector property 0x%04x", param}; }
+{
+#if !defined(__wasi__)
+    throw effect_exception{AL_INVALID_ENUM, "Invalid echo integer-vector property 0x%04x", param};
+#endif
+}
 void EffectHandler::GetParamf(const EchoProps &props, ALenum param, float *val)
 {
     switch(param)
@@ -94,7 +122,9 @@ void EffectHandler::GetParamf(const EchoProps &props, ALenum param, float *val)
     case AL_ECHO_SPREAD: *val = props.Spread; break;
 
     default:
+#if !defined(__wasi__)
         throw effect_exception{AL_INVALID_ENUM, "Invalid echo float property 0x%04x", param};
+#endif
     }
 }
 void EffectHandler::GetParamfv(const EchoProps &props, ALenum param, float *vals)
